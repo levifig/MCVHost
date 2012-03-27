@@ -18,6 +18,7 @@ To use MCVHost, you need to make a configuration file.  A sample one is included
     <mcvhost>
         <port>25565</port>
         <endpoint>0.0.0.0</endpoint>
+        <motd>A Minecraft Proxy</motd>
         <vhosts>
             <vhost host="c.myserver.com" destination="localhost:25566" />
             <vhost host="s.myserver.com" destination="localhost:25567" />
@@ -34,6 +35,10 @@ If you change this value, you can manipulate which port MCVHost uses.  The defau
     <endpoint>0.0.0.0</endpoint>
     
 If you don't know that this is, then you don't have to worry about it.  The default is 0.0.0.0 if you omit it.
+
+    <motd>A Minecraft Proxy</motd>
+    
+The message of the day for each address cannot be determined by MCVHost; it is impossible.  This global one will be used instead.  The default value is "A Minecraft Proxy".
 
     <vhosts>
         <vhost host="c.myserver.com" destination="localhost:25566" />
