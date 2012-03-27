@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<mcvhosts>
+  <port>25565</port>
+  <endpoint>0.0.0.0</endpoint>
+  <motd>A Minecraft Proxy</motd>
+  <vhosts>
+    <vhost host="s.minersguild.net" destination="127.0.0.1:25566" />
+    <vhost host="c.minersguild.net" destination="127.0.0.1:25567" />
+    <default destination="127.0.0.1:25566"></default>
+  </vhosts>
+</mcvhosts>
