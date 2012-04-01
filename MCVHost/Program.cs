@@ -198,6 +198,8 @@ namespace MCVHost
                 listnerPort = int.Parse(document.Root.Element("port").Value);
             if (document.Root.Element("endpoint") != null)
                 listenerEndPoint = document.Root.Element("endpoint").Value;
+            if (document.Root.Element("motd") != null)
+                MotD = document.Root.Element("motd").Value;
 
             if (document.Root.Element("vhosts") == null)
             {

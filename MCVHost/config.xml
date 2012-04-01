@@ -2,7 +2,7 @@
 <mcvhosts>
   <port>25565</port>
   <endpoint>0.0.0.0</endpoint>
-  <motd>A Minecraft Proxy</motd>
+  <motd>A Minecraft Proxy Test</motd>
   <vhosts>
     <vhost host="s.minersguild.net" destination="127.0.0.1:25566" />
     <vhost host="c.minersguild.net" destination="127.0.0.1:25567" />
