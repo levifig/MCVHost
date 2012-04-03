@@ -1,0 +1,49 @@
+MCVHost
+======
+
+MCVHost allows server owners to create virtual hosts for their servers.  A virtual host is something that allows you to have several addresses point to the same computer, yet still have it represent different servers.
+
+For example, say you own myserver.com, and you put a Minecraft server on it.  You want to offer both creative and survival worlds, so you make c.myserver.com, and s.myserver.com.  Normally, you'd have to put the servers on different ports, and include that in the server address.
+
+With MCVHost, you still use different ports for the servers, but the players actually connect to MCVHost instead.  So, you could put your creative server on port 25566, and your survival server on port 25567.  You can run MCVHost on port 25565, and configure it to redirect players to the right server based on which URL they used to connect.
+
+So, with MCVHost, it's actually possible to do this!  You can set up subdomains, or even entirely different domains, for each of your servers, and have them all lead to the same computer.
+
+Usage
+-----------
+
+To use MCVHost, you need to make a configuration file.  A sample one is included in the download.  Here's an example:
+
+    <?xml version="1.0" ?>
+    <mcvhost>
+        <port>25565</port>
+        <endpoint>0.0.0.0</endpoint>
+        <motd>A Minecraft Proxy</motd>
+        <vhosts>
+            <vhost host="c.myserver.com" destination="localhost:25566" />
+            <vhost host="s.myserver.com" destination="localhost:25567" />
+            <default destination="localhost:25566" />
+        </vhosts>
+    </mcvhost>
+    
+If we break down this file, we can see how it works.  The good news is, a lot of it is optional.
+
+    <port>25565</port>
+   
+If you change this value, you can manipulate which port MCVHost uses.  The default is 25565 if you omit it.
+
+    <endpoint>0.0.0.0</endpoint>
+    
+If you don't know that this is, then you don't have to worry about it.  The default is 0.0.0.0 if you omit it.
+
+    <motd>A Minecraft Proxy</motd>
+    
+The message of the day for each address cannot be determined by MCVHost; it is impossible.  This global one will be used instead.  The default value is "A Minecraft Proxy".
+
+    <vhosts>
+        <vhost host="c.myserver.com" destination="localhost:25566" />
+        <vhost host="s.myserver.com" destination="localhost:25567" />
+        <default destination="localhost:25566" />
+    </vhosts>
+        
+This is the important part.  Each vhost tag consists of a "host" and "destination".  The host is the address that a player will actually connect to, and the destination is where MCVHost will redirect them.  Notice that the default is there - it's optional, but if you choose to specify it, any unrecognized host will be sent here.
