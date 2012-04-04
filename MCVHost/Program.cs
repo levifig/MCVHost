@@ -27,6 +27,8 @@ namespace MCVHost
         static TcpListener listener;
         // We can't determine which host to use from an 0xFE request, so we have to specify a custom, global message of the day
         static string MotD = "A Minecraft Proxy";
+        // If true, fetch ping values from all remote servers
+        static bool FetchPingEnabled = false;
 
         static void Main(string[] args)
         {
@@ -88,51 +90,58 @@ namespace MCVHost
 
                 if (b == 0xFE) // Server list ping
                 {
-                    // This will count all the players on all the vhosts
-                    int players = 0;
-                    int max = 0;
-                    try
+                    byte[] payload = new byte[0];
+                    if (FetchPingEnabled)
                     {
-                        foreach (String s in VirtualHosts.Values)
+                        // This will count all the players on all the vhosts
+                        int players = 0;
+                        int max = 0;
+                        try
                         {
-                            TcpClient remoteServer = new TcpClient();
-                            if (s.Contains(":"))
+                            foreach (String s in VirtualHosts.Values)
                             {
-                                string[] parts = s.Split(':');
-                                remoteServer.ReceiveTimeout = 10000; // Ten second timeout
-                                remoteServer.Connect(parts[0], int.Parse(parts[1]));
-                            }
-                            else
-                            {
-                                remoteServer.ReceiveTimeout = 10000; // Ten second timeout
-                                remoteServer.Connect(s, 25565);
-                            }
-                            byte[] handshakePacket = new byte[] { 0xFE }.ToArray();
-                            remoteServer.GetStream().Write(handshakePacket, 0, handshakePacket.Length);
-                            bool hasData = false;
-                            while (!hasData)
-                            {
-                                if (remoteServer.Available != 0)
+                                TcpClient remoteServer = new TcpClient();
+                                if (s.Contains(":"))
                                 {
-                                    // Read any waiting data
-                                    const char space = '\u0000';
-                                    byte[] buffer = new byte[remoteServer.Available];
-                                    remoteServer.GetStream().Read(buffer, 0, buffer.Length);
-                                    String[] motd = System.Text.Encoding.ASCII.GetString(buffer, 0, buffer.Length).Split('\u003f');
-                                    players = players + Convert.ToInt32(new System.Text.RegularExpressions.Regex(space.ToString()).Replace(motd[2], string.Empty));
-                                    max = max + Convert.ToInt32(new System.Text.RegularExpressions.Regex(space.ToString()).Replace(motd[3], string.Empty));
-                                    remoteServer.Close();
-                                    hasData = true;
+                                    string[] parts = s.Split(':');
+                                    remoteServer.ReceiveTimeout = 10000; // Ten second timeout
+                                    remoteServer.Connect(parts[0], int.Parse(parts[1]));
                                 }
-                                Thread.Sleep(5);
+                                else
+                                {
+                                    remoteServer.ReceiveTimeout = 10000; // Ten second timeout
+                                    remoteServer.Connect(s, 25565);
+                                }
+                                byte[] handshakePacket = new byte[] { 0xFE }.ToArray();
+                                remoteServer.GetStream().Write(handshakePacket, 0, handshakePacket.Length);
+                                bool hasData = false;
+                                while (!hasData)
+                                {
+                                    if (remoteServer.Available != 0)
+                                    {
+                                        // Read any waiting data
+                                        const char space = '\u0000';
+                                        byte[] buffer = new byte[remoteServer.Available];
+                                        remoteServer.GetStream().Read(buffer, 0, buffer.Length);
+                                        String[] motd = System.Text.Encoding.ASCII.GetString(buffer, 0, buffer.Length).Split('\u003f');
+                                        players = players + Convert.ToInt32(new System.Text.RegularExpressions.Regex(space.ToString()).Replace(motd[2], string.Empty));
+                                        max = max + Convert.ToInt32(new System.Text.RegularExpressions.Regex(space.ToString()).Replace(motd[3], string.Empty));
+                                        remoteServer.Close();
+                                        hasData = true;
+                                    }
+                                    Thread.Sleep(5);
+                                }
                             }
+                            payload = new byte[] { 0xFF }.Concat(MakeString(MotD + "§" + players.ToString() + "§" + max.ToString())).ToArray(); // Construct a packet to respond with
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message + ex.StackTrace);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message + ex.StackTrace);
-                    }
-                    byte[] payload = new byte[] { 0xFF }.Concat(MakeString(MotD + "§" + players.ToString() + "§" + max.ToString())).ToArray(); // Construct a packet to respond with
+                    else
+                        payload = new byte[] { 0xFF }.Concat(MakeString(MotD)).ToArray();
+
                     remoteClient.GetStream().Write(payload, 0, payload.Length);
                     remoteClient.Close();
                     return;
@@ -242,6 +251,8 @@ namespace MCVHost
                 listenerEndPoint = document.Root.Element("endpoint").Value;
             if (document.Root.Element("motd") != null)
                 MotD = document.Root.Element("motd").Value;
+            if (document.Root.Element("pingremote") != null)
+                FetchPingEnabled = bool.Parse(document.Root.Element("pingremote").Value);
 
             if (document.Root.Element("vhosts") == null)
             {
